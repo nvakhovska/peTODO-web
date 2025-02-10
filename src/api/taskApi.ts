@@ -1,5 +1,5 @@
 import axios from "axios";
-import { Task } from "../types/Task";
+import { CreateTask, Task } from "../types/Task";
 import { useAuth } from "../context/AuthContext";
 import config from "../config/index";
 
@@ -28,8 +28,18 @@ export const updateTask = async (
   await axios.patch(`${API_URL}${taskId}`, updatedTask);
 };
 
-export const createTask = async (task: Task) => {
-  await axios.post(API_URL, task);
+export const createTask = async (task: CreateTask, token: string) => {
+  try {
+    const response = await axios.post(API_URL, task, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error creating task", error);
+    throw error;
+  }
 };
 
 export const deleteTask = async (taskId: string) => {

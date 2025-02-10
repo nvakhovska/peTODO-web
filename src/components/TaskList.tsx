@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import { useTasksContext } from "../context/TaskContext";
 import { useAuth } from "../context/AuthContext";
-import { Box, Grid, Typography } from "@mui/material";
+import { Box, Fab, Grid, Typography } from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
 import { fetchData } from "../utils/fetchData";
 import { getOverdueColor } from "../utils/colorUtils";
 import TaskCard from "./TaskCard";
 import TaskFilters from "./TaskFilters";
 import config from "../config/index";
+import TaskCreateDialog from "./TaskCreateDialog";
 
 // Import the Task interface from your models
 import { Task } from "../types/Task";
@@ -25,6 +27,7 @@ const TaskList = () => {
   const [filter, setFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState<"priority" | "date">("priority");
+  const [openDialog, setOpenDialog] = useState(false);
 
   useEffect(() => {
     const fetchTasks = async () => {
@@ -46,6 +49,11 @@ const TaskList = () => {
     };
     fetchTasks();
   }, [token, id, setTasks]);
+
+  const handleTaskCreated = (newTask: Task) => {
+    // Add the newly created task to the state (the task will now have _id)
+    setTasks((prevTasks) => [...prevTasks, newTask]); // Ensure newTask includes the _id from the backend
+  };
 
   const updateTaskStatus = async (
     taskId: string,
@@ -223,6 +231,22 @@ const TaskList = () => {
           </Box>
         ))}
       </Grid>
+      {/* Button to open the task creation dialog */}
+      <Fab
+        color="primary"
+        aria-label="add"
+        onClick={() => setOpenDialog(true)}
+        sx={{ position: "fixed", bottom: 16, right: 16 }}
+      >
+        <AddIcon />
+      </Fab>
+
+      {/* Task creation dialog */}
+      <TaskCreateDialog
+        open={openDialog}
+        onClose={() => setOpenDialog(false)}
+        onTaskCreated={handleTaskCreated}
+      />
     </Box>
   );
 };

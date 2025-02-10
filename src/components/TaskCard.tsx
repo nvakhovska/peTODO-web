@@ -10,21 +10,11 @@ import {
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import SubtaskList from "./SubtaskList";
+import { Task } from "../types/Task";
 
 // Define the types for the functions passed as props
 interface TaskCardProps {
-  task: {
-    _id: string;
-    title: string;
-    status: "completed" | "pending" | "in-progress";
-    priority: "high" | "medium" | "low";
-    dueDate?: string;
-    subtasks?: Array<{
-      _id: string;
-      title: string;
-      status: "completed" | "pending" | "in-progress";
-    }>;
-  };
+  task: Task;
   getOverdueColor: (
     dueDate: string,
     priority: "high" | "medium" | "low"
