@@ -9,7 +9,7 @@ export const fetchUserIdByEmailOrUsername = async (usernameOrEmail: string) => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ usernameOrEmail }),
+        body: JSON.stringify({ input: usernameOrEmail }),
       }
     );
 
