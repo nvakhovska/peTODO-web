@@ -5,6 +5,7 @@ import {
   FormControlLabel,
   Checkbox,
   Switch,
+  useTheme,
 } from "@mui/material";
 
 interface Subtask {
@@ -28,6 +29,8 @@ const SubtaskList = ({
   subtasks,
   handleSubtaskToggle,
 }: SubtaskListProps) => {
+  const theme = useTheme();
+
   return (
     <List>
       {subtasks.map((subtask) => (
@@ -35,8 +38,13 @@ const SubtaskList = ({
           key={subtask._id}
           sx={{
             borderRadius: 2,
-            bgcolor: "background.paper",
+            bgcolor: theme.palette.background.paper,
             mb: 1,
+            boxShadow:
+              theme.palette.mode === "dark"
+                ? "rgba(255, 255, 255, 0.05) 0px 1px 4px"
+                : "rgba(0, 0, 0, 0.1) 0px 1px 4px",
+            px: 2,
           }}
         >
           <FormControlLabel
@@ -53,6 +61,7 @@ const SubtaskList = ({
               />
             }
             label={<ListItemText primary={subtask.title} />}
+            sx={{ flex: 1 }}
           />
           <Switch
             checked={subtask.status === "in-progress"}

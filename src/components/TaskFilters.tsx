@@ -12,10 +12,10 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  useTheme,
 } from "@mui/material";
 import { useState } from "react";
 
-// Define the types for the props
 interface TaskFiltersProps {
   filter: string;
   setFilter: React.Dispatch<React.SetStateAction<string>>;
@@ -33,47 +33,63 @@ const TaskFilters = ({
   sortBy,
   setSortBy,
 }: TaskFiltersProps) => {
-  const [open, setOpen] = useState(false); // Dialog open state
-  const [localFilter, setLocalFilter] = useState(filter); // Local state for filter input
-  const [localStatusFilter, setLocalStatusFilter] = useState(statusFilter); // Local state for status checkboxes
+  const theme = useTheme();
+  const [open, setOpen] = useState(false);
+  const [localFilter, setLocalFilter] = useState(filter);
+  const [localStatusFilter, setLocalStatusFilter] = useState(statusFilter);
 
   const handleStatusChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { value, checked } = event.target;
-    if (checked) {
-      setLocalStatusFilter((prev) => [...prev, value]);
-    } else {
-      setLocalStatusFilter((prev) => prev.filter((status) => status !== value));
-    }
+    setLocalStatusFilter((prev) =>
+      checked ? [...prev, value] : prev.filter((status) => status !== value)
+    );
   };
 
   const handleApplyFilters = () => {
-    setFilter(localFilter); // Apply title filter
-    setStatusFilter(localStatusFilter); // Apply status filter
-    setOpen(false); // Close dialog
+    setFilter(localFilter);
+    setStatusFilter(localStatusFilter);
+    setOpen(false);
   };
 
   const handleClearFilters = () => {
-    setFilter(""); // Clear title filter
-    setStatusFilter([]); // Clear status filter
-    setOpen(false); // Close dialog
+    setFilter("");
+    setStatusFilter([]);
+    setOpen(false);
   };
 
   return (
     <Box display="flex" justifyContent="flex-end" mb={2}>
-      <Button variant="outlined" onClick={() => setOpen(true)}>
+      <Button
+        variant="outlined"
+        onClick={() => setOpen(true)}
+        sx={{
+          borderColor: theme.palette.primary.main,
+          color: theme.palette.primary.main,
+          "&:hover": {
+            backgroundColor: theme.palette.action.hover,
+          },
+        }}
+      >
         Filter
       </Button>
 
-      {/* Dialog for filters */}
       <Dialog
         open={open}
         onClose={() => setOpen(false)}
-        maxWidth="sm" // Set max width to 'sm' (small size)
-        fullWidth // Ensure dialog takes up full width available
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: {
+            backgroundColor: theme.palette.background.paper,
+            padding: 2,
+            borderRadius: "10px",
+          },
+        }}
       >
-        <DialogTitle>Filters</DialogTitle>
+        <DialogTitle sx={{ color: theme.palette.primary.main }}>
+          Filters
+        </DialogTitle>
         <DialogContent>
-          {/* Filter by title */}
           <TextField
             label="Filter by Title"
             variant="outlined"
@@ -83,9 +99,8 @@ const TaskFilters = ({
             sx={{ mb: 2 }}
           />
 
-          {/* Filter by status */}
           <Box sx={{ mb: 2 }}>
-            <Box sx={{ mb: 1 }}>Filter by Status:</Box>
+            <Box sx={{ mb: 1, fontWeight: "bold" }}>Filter by Status:</Box>
             {["pending", "in-progress", "completed"].map((status) => (
               <FormControlLabel
                 key={status}
@@ -101,7 +116,6 @@ const TaskFilters = ({
             ))}
           </Box>
 
-          {/* Sort by options */}
           <FormControl fullWidth sx={{ mb: 2 }}>
             <InputLabel>Sort By</InputLabel>
             <Select
@@ -115,8 +129,16 @@ const TaskFilters = ({
           </FormControl>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClearFilters}>Clear</Button>
-          <Button onClick={handleApplyFilters}>Apply</Button>
+          <Button onClick={handleClearFilters} color="secondary">
+            Clear
+          </Button>
+          <Button
+            onClick={handleApplyFilters}
+            color="primary"
+            variant="contained"
+          >
+            Apply
+          </Button>
         </DialogActions>
       </Dialog>
     </Box>

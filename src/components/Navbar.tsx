@@ -2,10 +2,14 @@ import { AppBar, Toolbar, Button, Typography, Box } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import config from "../config/index";
+import { useThemeContext } from "../context/ThemeContext";
+import { IconButton } from "@mui/material";
+import { Brightness4, Brightness7 } from "@mui/icons-material";
 
 const Navbar = () => {
   const { logout } = useAuth();
   const navigate = useNavigate();
+  const { themeMode, toggleTheme } = useThemeContext();
 
   return (
     <AppBar position="static" sx={{ width: "100%" }}>
@@ -14,7 +18,9 @@ const Navbar = () => {
           Task Manager
         </Typography>
         <Box sx={{ display: "flex", gap: 3 }}>
-          {" "}
+          <IconButton onClick={toggleTheme} color="inherit">
+            {themeMode === "dark" ? <Brightness7 /> : <Brightness4 />}
+          </IconButton>{" "}
           {/* Add gap between buttons */}
           <Button
             color="inherit"

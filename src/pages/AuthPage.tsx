@@ -10,6 +10,7 @@ import {
   Typography,
   Box,
   Switch,
+  useTheme,
 } from "@mui/material";
 
 const AuthPage = () => {
@@ -20,6 +21,7 @@ const AuthPage = () => {
   const [isSignup, setIsSignup] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
+  const theme = useTheme();
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -66,17 +68,22 @@ const AuthPage = () => {
       }}
     >
       <Paper
-        elevation={3}
+        elevation={4}
         sx={{
           p: 4,
           width: "100%",
           maxWidth: "400px",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
+          borderRadius: "12px",
+          backgroundColor: theme.palette.background.paper,
+          color: theme.palette.text.primary,
+          boxShadow: theme.shadows[3],
         }}
       >
-        <Typography variant="h5" gutterBottom>
+        <Typography
+          variant="h5"
+          gutterBottom
+          sx={{ textAlign: "center", fontWeight: 600 }}
+        >
           {isSignup ? "Sign Up" : "Login"}
         </Typography>
         <Box
@@ -96,7 +103,7 @@ const AuthPage = () => {
               fullWidth
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              required={isSignup}
+              required
             />
           )}
           <TextField
@@ -128,26 +135,37 @@ const AuthPage = () => {
               required
             />
           )}
-          <Button type="submit" variant="contained" color="primary" fullWidth>
+          <Button type="submit" variant="contained" fullWidth>
             {isSignup ? "Sign Up" : "Login"}
           </Button>
         </Box>
 
         <Button
           variant="outlined"
-          color="secondary"
           onClick={handleGoogleLogin}
           fullWidth
-          sx={{ mt: 2 }}
+          sx={{
+            mt: 2,
+            color: theme.palette.primary.main,
+            borderColor: theme.palette.primary.main,
+            "&:hover": {
+              backgroundColor: theme.palette.primary.main,
+              color: theme.palette.background.paper,
+            },
+          }}
         >
           Continue with Google
         </Button>
 
-        <Box sx={{ mt: 2, display: "flex", alignItems: "center" }}>
+        <Box sx={{ mt: 3, display: "flex", alignItems: "center" }}>
           <Typography variant="body2" sx={{ mr: 1 }}>
             Switch to {isSignup ? "Login" : "Sign Up"}
           </Typography>
-          <Switch checked={isSignup} onChange={() => setIsSignup(!isSignup)} />
+          <Switch
+            checked={isSignup}
+            onChange={() => setIsSignup(!isSignup)}
+            color="primary"
+          />
         </Box>
       </Paper>
     </Container>

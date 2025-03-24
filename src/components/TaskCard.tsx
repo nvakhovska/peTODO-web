@@ -7,12 +7,12 @@ import {
   IconButton,
   Box,
   Switch,
+  useTheme,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import SubtaskList from "./SubtaskList";
 import { Task } from "../types/Task";
 
-// Define the types for the functions passed as props
 interface TaskCardProps {
   task: Task;
   getOverdueColor: (
@@ -36,14 +36,34 @@ const TaskCard = ({
   handleTaskToggle,
   handleSubtaskToggle,
 }: TaskCardProps) => {
+  const theme = useTheme();
+  const overdueColor = getOverdueColor(
+    task.dueDate ?? "",
+    task.priority ?? "low"
+  );
+
   return (
     <Card
       sx={{
-        bgcolor: getOverdueColor(task.dueDate ?? "", task.priority ?? "low"),
+        backgroundColor: theme.palette.background.paper,
+        color: theme.palette.text.primary,
+        borderRadius: "10px",
+        boxShadow:
+          theme.palette.mode === "light"
+            ? "rgba(176, 148, 88, 0.2) 0 7px 29px 0"
+            : "rgba(176, 148, 88, 0.25) 5px 5px 15px 0px, rgba(0, 0, 0, 0.06) 0px 0px 0px 1px",
+        borderLeft: `6px solid ${overdueColor || theme.palette.primary.main}`,
+        padding: 2,
+        mb: 3,
       }}
     >
       <CardContent>
-        <Box display="flex" alignItems="center" justifyContent="space-between">
+        <Box
+          display="flex"
+          alignItems="center"
+          justifyContent="space-between"
+          gap={2}
+        >
           <FormControlLabel
             control={
               <Checkbox
@@ -56,8 +76,13 @@ const TaskCard = ({
                 }
               />
             }
-            label={<Typography variant="h6">{task.title}</Typography>}
+            label={
+              <Typography variant="h6" sx={{ fontWeight: 500 }}>
+                {task.title}
+              </Typography>
+            }
           />
+
           <Switch
             checked={task.status === "in-progress"}
             onChange={(e) =>
@@ -67,15 +92,18 @@ const TaskCard = ({
               )
             }
           />
+
           <Typography variant="body2" color="text.secondary">
             {task.dueDate
               ? new Date(task.dueDate).toDateString()
               : "No Due Date"}
           </Typography>
+
           <IconButton>
             <EditIcon />
           </IconButton>
         </Box>
+
         {task.subtasks && task.subtasks.length > 0 && (
           <SubtaskList
             taskId={task._id}

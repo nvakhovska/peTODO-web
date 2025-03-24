@@ -12,16 +12,17 @@ import {
   MenuItem,
   Checkbox,
   FormControlLabel,
+  useTheme,
 } from "@mui/material";
 import { createTask } from "../api/taskApi";
 import { CreateTask, Task } from "../types/Task";
-import { useAuth } from "../context/AuthContext"; // Import useAuth hook
-import { fetchUserIdByEmailOrUsername } from "../api/userApi"; // Assume you have a function to fetch userId
+import { useAuth } from "../context/AuthContext";
+import { fetchUserIdByEmailOrUsername } from "../api/userApi";
 
 interface TaskCreateDialogProps {
   open: boolean;
   onClose: () => void;
-  onTaskCreated: (task: Task) => void; // Callback to refresh the task list
+  onTaskCreated: (task: Task) => void;
 }
 
 const TaskCreateDialog: React.FC<TaskCreateDialogProps> = ({
@@ -29,69 +30,72 @@ const TaskCreateDialog: React.FC<TaskCreateDialogProps> = ({
   onClose,
   onTaskCreated,
 }) => {
-  const { token, id: currentUserId } = useAuth(); // Get current user ID using useAuth hook
+  const theme = useTheme();
+  const { token, id: currentUserId } = useAuth();
+
   const [title, setTitle] = useState("");
   const [priority, setPriority] = useState<"low" | "medium" | "high">("low");
-  const [assignedTo, setAssignedTo] = useState<string>(""); // For either username or UserEmail
-  const [dueDate, setDueDate] = useState<string>("");
-  const [tags, setTags] = useState<string>("");
-  const [assignToAll, setAssignToAll] = useState<boolean>(false);
-  const [showOptionalFields, setShowOptionalFields] = useState<boolean>(false);
-  const [assignedUserId, setAssignedUserId] = useState<string | null>(null); // Store userId here
+  const [assignedTo, setAssignedTo] = useState("");
+  const [dueDate, setDueDate] = useState("");
+  const [tags, setTags] = useState("");
+  const [assignToAll, setAssignToAll] = useState(false);
+  const [showOptionalFields, setShowOptionalFields] = useState(false);
+  const [assignedUserId, setAssignedUserId] = useState<string | null>(null);
 
-  // Fetch the userId if assignedTo is a username or email
   const handleAssignedToChange = async (value: string) => {
     setAssignedTo(value);
-
-    // Try to fetch userId by username or email
     if (value) {
       try {
-        const userId = await fetchUserIdByEmailOrUsername(value); // Your API function
+        const userId = await fetchUserIdByEmailOrUsername(value);
         setAssignedUserId(userId);
       } catch (error) {
         console.error("Error fetching userId", error);
-        setAssignedUserId(null); // Reset if there was an error
+        setAssignedUserId(null);
       }
     } else {
-      setAssignedUserId(null); // Reset if empty
+      setAssignedUserId(null);
     }
   };
 
   const handleCreateTask = async () => {
-    if (!token) {
-      console.error("No authentication token found");
-      return;
-    }
+    if (!token) return;
 
-    // Ensure assignedTo is an array of strings, filter out any null or invalid userIds
-    const assignedUsers = assignToAll ? [] : [assignedUserId || currentUserId]; // Fallback to currentUserId if assignedUserId is null
-
-    // Filter out any null values (if assignedUserId is null, it will be excluded)
-    const validAssignedTo = assignedUsers.filter(
-      (userId) => userId !== null
-    ) as string[];
+    const assignedUsers = assignToAll ? [] : [assignedUserId || currentUserId];
+    const validAssignedTo = assignedUsers.filter(Boolean) as string[];
 
     const newTask: CreateTask = {
       title,
       priority,
       status: "pending",
-      assignedTo: validAssignedTo, // Only valid userIds will be in assignedTo array
+      assignedTo: validAssignedTo,
       dueDate,
-      tags: tags ? tags.split(",").map((tag) => tag.trim()) : [], // Convert tags to an array
+      tags: tags ? tags.split(",").map((tag) => tag.trim()) : [],
     };
 
     try {
-      const createdTask = await createTask(newTask, token); // Pass the token to the createTask function
-      onTaskCreated(createdTask); // Update the task list after creation with the task containing _id
-      onClose(); // Close the dialog
+      const createdTask = await createTask(newTask, token);
+      onTaskCreated(createdTask);
+      onClose();
     } catch (error) {
       console.error("Error creating task", error);
     }
   };
 
   return (
-    <Dialog open={open} onClose={onClose}>
-      <DialogTitle>Create New Task</DialogTitle>
+    <Dialog
+      open={open}
+      onClose={onClose}
+      PaperProps={{
+        sx: {
+          backgroundColor: theme.palette.background.paper,
+          borderRadius: "10px",
+          padding: 2,
+        },
+      }}
+    >
+      <DialogTitle sx={{ color: theme.palette.primary.main }}>
+        Create New Task
+      </DialogTitle>
       <DialogContent>
         <TextField
           label="Task Title"
@@ -107,6 +111,7 @@ const TaskCreateDialog: React.FC<TaskCreateDialogProps> = ({
             onChange={(e) =>
               setPriority(e.target.value as "low" | "medium" | "high")
             }
+            label="Priority"
           >
             <MenuItem value="low">Low</MenuItem>
             <MenuItem value="medium">Medium</MenuItem>
@@ -114,7 +119,6 @@ const TaskCreateDialog: React.FC<TaskCreateDialogProps> = ({
           </Select>
         </FormControl>
 
-        {/* Checkbox to toggle showing additional fields */}
         <FormControlLabel
           control={
             <Checkbox
@@ -125,11 +129,10 @@ const TaskCreateDialog: React.FC<TaskCreateDialogProps> = ({
           label="Add more options"
         />
 
-        {/* Optional fields */}
         {showOptionalFields && (
           <>
             <TextField
-              label="Assigned to (Username or UserEmail)"
+              label="Assigned to (Username or Email)"
               value={assignedTo}
               onChange={(e) => handleAssignedToChange(e.target.value)}
               fullWidth
@@ -151,9 +154,7 @@ const TaskCreateDialog: React.FC<TaskCreateDialogProps> = ({
               onChange={(e) => setDueDate(e.target.value)}
               fullWidth
               margin="normal"
-              InputLabelProps={{
-                shrink: true,
-              }}
+              InputLabelProps={{ shrink: true }}
             />
             <TextField
               label="Tags (comma-separated)"
@@ -166,10 +167,10 @@ const TaskCreateDialog: React.FC<TaskCreateDialogProps> = ({
         )}
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose} color="secondary">
+        <Button onClick={onClose} variant="outlined" color="secondary">
           Cancel
         </Button>
-        <Button onClick={handleCreateTask} color="primary">
+        <Button onClick={handleCreateTask} variant="contained" color="primary">
           Create Task
         </Button>
       </DialogActions>

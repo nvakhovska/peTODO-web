@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useTasksContext } from "../context/TaskContext";
 import { useAuth } from "../context/AuthContext";
-import { Box, Fab, Grid, Typography } from "@mui/material";
+import { Box, Fab, Grid, Typography, useTheme } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import { fetchData } from "../utils/fetchData";
 import { getOverdueColor } from "../utils/colorUtils";
@@ -9,11 +9,8 @@ import TaskCard from "./TaskCard";
 import TaskFilters from "./TaskFilters";
 import config from "../config/index";
 import TaskCreateDialog from "./TaskCreateDialog";
-
-// Import the Task interface from your models
 import { Task } from "../types/Task";
 
-// Define the type for the grouped tasks
 type TaskGroups = {
   Overdue: Task[];
   Tomorrow: Task[];
@@ -28,6 +25,8 @@ const TaskList = () => {
   const [statusFilter, setStatusFilter] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState<"priority" | "date">("priority");
   const [openDialog, setOpenDialog] = useState(false);
+
+  const theme = useTheme();
 
   useEffect(() => {
     const fetchTasks = async () => {
@@ -51,8 +50,7 @@ const TaskList = () => {
   }, [token, id, setTasks]);
 
   const handleTaskCreated = (newTask: Task) => {
-    // Add the newly created task to the state (the task will now have _id)
-    setTasks((prevTasks) => [...prevTasks, newTask]); // Ensure newTask includes the _id from the backend
+    setTasks((prevTasks) => [...prevTasks, newTask]);
   };
 
   const updateTaskStatus = async (
@@ -60,10 +58,7 @@ const TaskList = () => {
     newStatus: "completed" | "pending" | "in-progress"
   ) => {
     try {
-      if (!token) {
-        throw new Error("No token available");
-      }
-
+      if (!token) throw new Error("No token available");
       await fetchData(
         token,
         "PATCH",
@@ -125,74 +120,53 @@ const TaskList = () => {
     );
   };
 
-  // Helper function to determine the group by date
   const getTaskGroup = (task: Task) => {
     const now = new Date();
-    const dueDate = new Date(
-      task.dueDate ? new Date(task.dueDate) : new Date()
-    );
+    const dueDate = new Date(task.dueDate ?? new Date());
 
-    // Overdue task
-    if (dueDate < now) {
-      return "Overdue";
-    }
+    if (dueDate < now) return "Overdue";
 
-    // Tomorrow
     const tomorrow = new Date();
     tomorrow.setDate(now.getDate() + 1);
-    if (dueDate.toDateString() === tomorrow.toDateString()) {
-      return "Tomorrow";
-    }
+    if (dueDate.toDateString() === tomorrow.toDateString()) return "Tomorrow";
 
-    // Next Week
     const nextWeek = new Date();
     nextWeek.setDate(now.getDate() + 7);
-    if (dueDate <= nextWeek) {
-      return "Next Week";
-    }
+    if (dueDate <= nextWeek) return "Next Week";
 
-    // Other future tasks
     return "Later";
   };
 
-  // Sort tasks by overdue first, then by priority and due date
   const sortedFilteredTasks = tasks
-    .filter((task) => task.title.toLowerCase().includes(filter.toLowerCase())) // Title filter
+    .filter((task) => task.title.toLowerCase().includes(filter.toLowerCase()))
     .filter(
       (task) => statusFilter.length === 0 || statusFilter.includes(task.status)
-    ) // Status filter
+    )
     .sort((a, b) => {
       const now = new Date();
       const aDueDate = new Date(a.dueDate || 0);
       const bDueDate = new Date(b.dueDate || 0);
-
-      // Sort by overdue first, then by priority, then by due date
       const isOverdueA = aDueDate < now;
       const isOverdueB = bDueDate < now;
 
       if (isOverdueA && !isOverdueB) return -1;
       if (!isOverdueA && isOverdueB) return 1;
 
-      // Sort by priority
       const priorityOrder = { high: 1, medium: 2, low: 3 };
       if (a.priority !== b.priority) {
         return (
-          (priorityOrder[a.priority as "high" | "medium" | "low"] || 3) -
-          (priorityOrder[b.priority as "high" | "medium" | "low"] || 3)
+          (priorityOrder[a.priority ?? "low"] ?? 3) -
+          (priorityOrder[b.priority ?? "low"] ?? 3)
         );
       }
 
-      // If priorities are the same, sort by due date
       return aDueDate.getTime() - bDueDate.getTime();
     });
 
-  // Group tasks by overdue, tomorrow, next week, and later
   const groupedTasks: TaskGroups = sortedFilteredTasks.reduce(
     (groups: TaskGroups, task) => {
       const group = getTaskGroup(task);
-      if (!groups[group]) {
-        groups[group] = [];
-      }
+      if (!groups[group]) groups[group] = [];
       groups[group].push(task);
       return groups;
     },
@@ -200,7 +174,14 @@ const TaskList = () => {
   );
 
   return (
-    <Box sx={{ minHeight: "100vh", padding: 3 }}>
+    <Box
+      sx={{
+        minHeight: "100vh",
+        padding: theme.spacing(3),
+        backgroundColor: theme.palette.background.default,
+        color: theme.palette.text.primary,
+      }}
+    >
       <TaskFilters
         filter={filter}
         setFilter={setFilter}
@@ -209,29 +190,36 @@ const TaskList = () => {
         sortBy={sortBy}
         setSortBy={setSortBy}
       />
-      <Grid container spacing={3}>
-        {/* Render each group */}
-        {Object.keys(groupedTasks).map((group) => (
-          <Box key={group} sx={{ width: "100%" }}>
-            <Typography variant="h6" sx={{ mb: 2 }}>
-              {group}
-            </Typography>
-            <Grid container spacing={3}>
-              {groupedTasks[group as keyof TaskGroups].map((task) => (
-                <Grid item xs={12} sm={6} md={4} key={task._id}>
-                  <TaskCard
-                    task={{ ...task, priority: task.priority ?? "low" }}
-                    getOverdueColor={getOverdueColor}
-                    handleTaskToggle={handleTaskToggle}
-                    handleSubtaskToggle={handleSubtaskToggle}
-                  />
-                </Grid>
-              ))}
-            </Grid>
-          </Box>
-        ))}
-      </Grid>
-      {/* Button to open the task creation dialog */}
+
+      {Object.keys(groupedTasks).map((group) => (
+        <Box key={group} sx={{ marginBottom: theme.spacing(4) }}>
+          <Typography
+            variant="h6"
+            sx={{
+              color: "rgb(var(--clr-primary))",
+              textAlign: "left",
+              fontWeight: 600,
+              marginBottom: 2,
+            }}
+          >
+            {group}
+          </Typography>
+
+          <Grid container spacing={3}>
+            {groupedTasks[group as keyof TaskGroups].map((task) => (
+              <Grid item xs={12} sm={6} md={4} key={task._id}>
+                <TaskCard
+                  task={{ ...task, priority: task.priority ?? "low" }}
+                  getOverdueColor={getOverdueColor}
+                  handleTaskToggle={handleTaskToggle}
+                  handleSubtaskToggle={handleSubtaskToggle}
+                />
+              </Grid>
+            ))}
+          </Grid>
+        </Box>
+      ))}
+
       <Fab
         color="primary"
         aria-label="add"
@@ -241,7 +229,6 @@ const TaskList = () => {
         <AddIcon />
       </Fab>
 
-      {/* Task creation dialog */}
       <TaskCreateDialog
         open={openDialog}
         onClose={() => setOpenDialog(false)}
