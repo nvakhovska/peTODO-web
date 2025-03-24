@@ -13,6 +13,7 @@ import Navbar from "./components/Navbar";
 import { CssBaseline, ThemeProvider } from "@mui/material";
 import theme from "./theme";
 import config from "./config/index";
+import OAuthSuccess from "./pages/OAuthSuccess";
 
 function App() {
   return (
@@ -34,6 +35,9 @@ function App() {
                 }
               />
               <Route path={config.taskRoutes.login} element={<AuthPage />} />
+
+              <Route path="/oauth-success" element={<OAuthSuccess />} />
+
               <Route
                 path={
                   config.taskRoutes.getTasks + config.taskRoutes.getUserTasks

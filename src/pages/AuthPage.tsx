@@ -15,8 +15,8 @@ import {
 const AuthPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [username, setUsername] = useState(""); // Added username state
-  const [passwordConfirm, setPasswordConfirm] = useState(""); // Added passwordConfirm state
+  const [username, setUsername] = useState("");
+  const [passwordConfirm, setPasswordConfirm] = useState("");
   const [isSignup, setIsSignup] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -24,14 +24,13 @@ const AuthPage = () => {
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
-    // Determine the endpoint and request body based on signup/login mode
     const endpoint = isSignup
       ? `${config.apiBaseUrl}${config.taskRoutes.signup}`
       : `${config.apiBaseUrl}${config.taskRoutes.login}`;
 
     const body = isSignup
-      ? JSON.stringify({ username, email, password, passwordConfirm }) // Include username and passwordConfirm for signup
-      : JSON.stringify({ email, password }); // Only email and password for login
+      ? JSON.stringify({ username, email, password, passwordConfirm })
+      : JSON.stringify({ email, password });
 
     const response = await fetch(endpoint, {
       method: "POST",
@@ -42,10 +41,16 @@ const AuthPage = () => {
     const data = await response.json();
     if (response.ok) {
       login(data.token);
-      navigate(config.taskRoutes.getTasks + config.taskRoutes.getUserTasks);
+      navigate(
+        `${config.taskRoutes.getTasks}${config.taskRoutes.getUserTasks}`
+      );
     } else {
       alert("Authentication failed");
     }
+  };
+
+  const handleGoogleLogin = () => {
+    window.location.href = `${config.apiBaseUrl}/users/auth/google`;
   };
 
   return (
@@ -56,8 +61,8 @@ const AuthPage = () => {
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        height: "100vh", // Ensures container takes up full height
-        padding: "0 16px", // Adds horizontal padding
+        height: "100vh",
+        padding: "0 16px",
       }}
     >
       <Paper
@@ -65,10 +70,10 @@ const AuthPage = () => {
         sx={{
           p: 4,
           width: "100%",
-          maxWidth: "400px", // Limits the width for larger screens
+          maxWidth: "400px",
           display: "flex",
           flexDirection: "column",
-          alignItems: "center", // Centers form elements
+          alignItems: "center",
         }}
       >
         <Typography variant="h5" gutterBottom>
@@ -91,7 +96,7 @@ const AuthPage = () => {
               fullWidth
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              required={isSignup} // Only required for signup
+              required={isSignup}
             />
           )}
           <TextField
@@ -120,13 +125,24 @@ const AuthPage = () => {
               type="password"
               value={passwordConfirm}
               onChange={(e) => setPasswordConfirm(e.target.value)}
-              required={isSignup} // Only required for signup
+              required
             />
           )}
           <Button type="submit" variant="contained" color="primary" fullWidth>
             {isSignup ? "Sign Up" : "Login"}
           </Button>
         </Box>
+
+        <Button
+          variant="outlined"
+          color="secondary"
+          onClick={handleGoogleLogin}
+          fullWidth
+          sx={{ mt: 2 }}
+        >
+          Continue with Google
+        </Button>
+
         <Box sx={{ mt: 2, display: "flex", alignItems: "center" }}>
           <Typography variant="body2" sx={{ mr: 1 }}>
             Switch to {isSignup ? "Login" : "Sign Up"}
