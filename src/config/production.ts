@@ -1,5 +1,5 @@
 const config = {
-  apiBaseUrl: "https://production-server-url.com/api/v1", // Production URL
+  apiBaseUrl: `${import.meta.env.VITE_API_URL}/api/v1`, // Production URL
   taskRoutes: {
     getTasks: "/tasks",
     getUserTasks: "/tasks/task-for-user",
