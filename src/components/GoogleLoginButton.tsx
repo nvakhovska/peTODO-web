@@ -6,16 +6,15 @@ const GoogleLoginButton = () => {
     const top = window.innerHeight / 2 - height / 2;
 
     const popup = window.open(
-      "http://localhost:3000/api/v1/users/auth/google",
+      `${import.meta.env.VITE_API_URL}/users/auth/google`,
       "GoogleLogin",
       `width=${width},height=${height},top=${top},left=${left}`
     );
 
     const receiveMessage = (event: MessageEvent) => {
-      if (
-        event.origin !== "http://localhost:3000" || // match backend origin
-        !event.data?.token
-      ) {
+      const backendOrigin = new URL(import.meta.env.VITE_API_URL).origin;
+
+      if (event.origin !== backendOrigin || !event.data?.token) {
         return;
       }
 
