@@ -1,9 +1,18 @@
-import { createContext, useContext, useState, ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  ReactNode,
+  useCallback,
+} from "react";
 import { Task } from "../types/Task";
 
 interface TaskContextType {
   tasks: Task[];
   setTasks: React.Dispatch<React.SetStateAction<Task[]>>;
+  addTask: (task: Task) => void;
+  removeTask: (id: string) => void;
+  updateTaskStatus: (id: string, status: string) => void;
 }
 
 const TaskContext = createContext<TaskContextType | undefined>(undefined);
@@ -13,8 +22,26 @@ export const TaskProvider: React.FC<{ children: ReactNode }> = ({
 }) => {
   const [tasks, setTasks] = useState<Task[]>([]);
 
+  const addTask = useCallback((task: Task) => {
+    setTasks((prev) => [...prev, task]);
+  }, []);
+
+  const removeTask = useCallback((id: string) => {
+    setTasks((prev) => prev.filter((task) => task._id !== id));
+  }, []);
+
+  const updateTaskStatus = useCallback((id: string, status: string) => {
+    setTasks((prev) =>
+      prev.map((task) =>
+        task._id === id ? ({ ...task, status } as Task) : task
+      )
+    );
+  }, []);
+
   return (
-    <TaskContext.Provider value={{ tasks, setTasks }}>
+    <TaskContext.Provider
+      value={{ tasks, setTasks, addTask, removeTask, updateTaskStatus }}
+    >
       {children}
     </TaskContext.Provider>
   );

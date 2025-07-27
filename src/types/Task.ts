@@ -8,6 +8,7 @@ export interface Task {
   createdBy?: string;
   assignedTo?: string[];
   subtasks?: Subtask[];
+  highlighted?: boolean;
 }
 
 export interface Subtask {

@@ -15,6 +15,7 @@ import { getTheme } from "./theme";
 import config from "./config/index";
 import OAuthSuccess from "./pages/OAuthSuccess";
 import { useThemeContext } from "./context/ThemeContext";
+import SocketListener from "./components/SocketListener";
 
 function App() {
   const { themeMode } = useThemeContext();
@@ -26,6 +27,7 @@ function App() {
       <Router>
         <AuthProvider>
           <TaskProvider>
+            <SocketListener />
             <Routes>
               <Route
                 path="/"

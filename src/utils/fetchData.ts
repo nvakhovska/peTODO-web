@@ -25,9 +25,11 @@ export const fetchData = async (
   }
 
   // Proceed with fetch if the route is valid
-  const response = await fetch(
-    `${config.apiBaseUrl}${config.taskRoutes.getTasks}${route}`,
-    options
-  );
+  const fullRoute = route.startsWith("/")
+    ? `${config.apiBaseUrl}${config.taskRoutes.getTasks}${route}`
+    : `${config.apiBaseUrl}${config.taskRoutes.getTasks}/${route}`;
+
+  const response = await fetch(fullRoute, options);
+
   return response;
 };

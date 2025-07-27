@@ -7,7 +7,7 @@ export const getOverdueColor = (
   const overdueDays =
     1 +
     Math.floor((currentDate.getTime() - due.getTime()) / (1000 * 3600 * 24));
-  console.log(overdueDays);
+
   if (overdueDays < 0) return ""; // No overdue color if the task is not overdue
 
   let baseColor: string;

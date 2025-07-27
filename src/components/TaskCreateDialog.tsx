@@ -15,14 +15,14 @@ import {
   useTheme,
 } from "@mui/material";
 import { createTask } from "../api/taskApi";
-import { CreateTask, Task } from "../types/Task";
+import { CreateTask } from "../types/Task";
 import { useAuth } from "../context/AuthContext";
 import { fetchUserIdByEmailOrUsername } from "../api/userApi";
 
 interface TaskCreateDialogProps {
   open: boolean;
   onClose: () => void;
-  onTaskCreated: (task: Task) => void;
+  onTaskCreated: () => void;
 }
 
 const TaskCreateDialog: React.FC<TaskCreateDialogProps> = ({
@@ -68,13 +68,13 @@ const TaskCreateDialog: React.FC<TaskCreateDialogProps> = ({
       priority,
       status: "pending",
       assignedTo: validAssignedTo,
-      dueDate,
+      dueDate: dueDate ? dueDate : undefined,
       tags: tags ? tags.split(",").map((tag) => tag.trim()) : [],
     };
 
     try {
-      const createdTask = await createTask(newTask, token);
-      onTaskCreated(createdTask);
+      await createTask(newTask, token);
+      onTaskCreated();
       onClose();
     } catch (error) {
       console.error("Error creating task", error);

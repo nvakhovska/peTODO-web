@@ -20,37 +20,36 @@ type TaskGroups = {
 
 const TaskList = () => {
   const { tasks, setTasks } = useTasksContext();
-  const { token, id } = useAuth();
+  const { token } = useAuth();
   const [filter, setFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState<"priority" | "date">("priority");
   const [openDialog, setOpenDialog] = useState(false);
-
   const theme = useTheme();
+  const fetchTasks = async () => {
+    if (!token) return;
+    try {
+      const response = await fetchData(
+        token,
+        "GET",
+        undefined,
+        config.taskRoutes.getUserTasks
+      );
+      const data = await response?.json();
 
-  useEffect(() => {
-    const fetchTasks = async () => {
-      if (!token) return;
-      try {
-        const response = await fetchData(
-          token,
-          "GET",
-          undefined,
-          config.taskRoutes.getUserTasks + id
-        );
-        const data = await response?.json();
-        if (response?.ok && data?.data) {
-          setTasks(data.data);
-        }
-      } catch (error) {
-        console.error("Error fetching tasks:", error);
+      if (response?.ok && data?.data) {
+        setTasks(data.data);
       }
-    };
+    } catch (error) {
+      console.error("Error fetching tasks:", error);
+    }
+  };
+  useEffect(() => {
     fetchTasks();
-  }, [token, id, setTasks]);
+  }, [token, setTasks]);
 
-  const handleTaskCreated = (newTask: Task) => {
-    setTasks((prevTasks) => [...prevTasks, newTask]);
+  const handleTaskCreated = async () => {
+    await fetchTasks();
   };
 
   const updateTaskStatus = async (
@@ -120,10 +119,10 @@ const TaskList = () => {
     );
   };
 
-  const getTaskGroup = (task: Task) => {
+  const getTaskGroup = (task: Task): keyof TaskGroups => {
     const now = new Date();
-    const dueDate = new Date(task.dueDate ?? new Date());
-
+    const dueDate = task.dueDate ? new Date(task.dueDate) : new Date();
+    if (!dueDate || isNaN(dueDate.getTime())) return "Later";
     if (dueDate < now) return "Overdue";
 
     const tomorrow = new Date();
@@ -163,15 +162,17 @@ const TaskList = () => {
       return aDueDate.getTime() - bDueDate.getTime();
     });
 
-  const groupedTasks: TaskGroups = sortedFilteredTasks.reduce(
-    (groups: TaskGroups, task) => {
-      const group = getTaskGroup(task);
-      if (!groups[group]) groups[group] = [];
-      groups[group].push(task);
-      return groups;
-    },
-    { Overdue: [], Tomorrow: [], "Next Week": [], Later: [] }
-  );
+  const groupedTasks: TaskGroups = {
+    Overdue: [],
+    Tomorrow: [],
+    "Next Week": [],
+    Later: [],
+  };
+
+  sortedFilteredTasks.forEach((task) => {
+    const group = getTaskGroup(task);
+    groupedTasks[group].push(task);
+  });
 
   return (
     <Box

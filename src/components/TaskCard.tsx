@@ -45,7 +45,12 @@ const TaskCard = ({
   return (
     <Card
       sx={{
-        backgroundColor: theme.palette.background.paper,
+        backgroundColor: task.highlighted
+          ? theme.palette.mode === "light"
+            ? "#fff9e1" // light yellow
+            : "#5c4a00" // dark golden
+          : theme.palette.background.paper,
+        transition: "background-color 0.3s ease-in-out",
         color: theme.palette.text.primary,
         borderRadius: "10px",
         boxShadow:
