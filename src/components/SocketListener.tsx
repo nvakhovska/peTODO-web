@@ -19,25 +19,34 @@ const SocketListener = () => {
       }, 3000);
     });
 
-    socket.on("taskUpdated", ({ id, status }) => {
-      setTasks((prev) =>
-        prev.map((task) => {
-          const taskId = task._id?.toString?.();
-          return taskId === id?.toString?.()
-            ? { ...task, status, highlighted: true }
-            : task;
-        })
-      );
-      setTimeout(() => {
+    socket.on(
+      "taskUpdated",
+      ({
+        id,
+        status,
+      }: {
+        id: string;
+        status: "pending" | "in-progress" | "completed";
+      }) => {
         setTasks((prev) =>
-          prev.map((t) =>
-            t._id?.toString?.() === id?.toString?.()
-              ? { ...t, highlighted: false }
-              : t
-          )
+          prev.map((task) => {
+            const taskId = task._id?.toString?.();
+            return taskId === id?.toString?.()
+              ? { ...task, status, highlighted: true }
+              : task;
+          })
         );
-      }, 3000);
-    });
+        setTimeout(() => {
+          setTasks((prev) =>
+            prev.map((t) =>
+              t._id?.toString?.() === id?.toString?.()
+                ? { ...t, highlighted: false }
+                : t
+            )
+          );
+        }, 3000);
+      }
+    );
 
     socket.on("taskDeleted", (deletedTaskId: string) => {
       setTasks((prev) =>

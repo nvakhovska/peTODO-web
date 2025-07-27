@@ -12,7 +12,7 @@ interface TaskContextType {
   setTasks: React.Dispatch<React.SetStateAction<Task[]>>;
   addTask: (task: Task) => void;
   removeTask: (id: string) => void;
-  updateTaskStatus: (id: string, status: string) => void;
+  updateTask: (id: string, status: string) => void;
 }
 
 const TaskContext = createContext<TaskContextType | undefined>(undefined);
@@ -30,7 +30,7 @@ export const TaskProvider: React.FC<{ children: ReactNode }> = ({
     setTasks((prev) => prev.filter((task) => task._id !== id));
   }, []);
 
-  const updateTaskStatus = useCallback((id: string, status: string) => {
+  const updateTask = useCallback((id: string, status: string) => {
     setTasks((prev) =>
       prev.map((task) =>
         task._id === id ? ({ ...task, status } as Task) : task
@@ -40,7 +40,7 @@ export const TaskProvider: React.FC<{ children: ReactNode }> = ({
 
   return (
     <TaskContext.Provider
-      value={{ tasks, setTasks, addTask, removeTask, updateTaskStatus }}
+      value={{ tasks, setTasks, addTask, removeTask, updateTask }}
     >
       {children}
     </TaskContext.Provider>

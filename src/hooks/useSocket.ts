@@ -1,12 +1,13 @@
 import { useEffect } from "react";
 import socket from "../utils/socket";
 import { useTasksContext } from "../context/TaskContext";
+import { Task } from "../types/Task";
 
 const useSocket = () => {
-  const { addTask, removeTask, updateTaskStatus } = useTasksContext();
+  const { addTask, removeTask, updateTask } = useTasksContext();
 
   useEffect(() => {
-    socket.on("taskCreated", (task) => {
+    socket.on("taskCreated", (task: Task) => {
       addTask(task);
     });
 
@@ -14,17 +15,20 @@ const useSocket = () => {
       removeTask(id);
     });
 
-    socket.on("taskStatusUpdated", ({ id, status }) => {
-      updateTaskStatus(id, status);
-    });
+    socket.on(
+      "taskUpdated",
+      ({ id, status }: { id: string; status: string }) => {
+        updateTask(id, status);
+      }
+    );
 
     // Clean-up on unmount
     return () => {
       socket.off("taskCreated");
       socket.off("taskDeleted");
-      socket.off("taskStatusUpdated");
+      socket.off("taskUpdated");
     };
-  }, [addTask, removeTask, updateTaskStatus]);
+  }, [addTask, removeTask, updateTask]);
 };
 
 export default useSocket;
