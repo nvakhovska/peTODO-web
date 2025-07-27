@@ -11,13 +11,19 @@ const useSocket = () => {
       addTask(task);
     });
 
-    socket.on("taskDeleted", ({ id }) => {
+    socket.on("taskDeleted", ({ id }: { id: string }) => {
       removeTask(id);
     });
 
     socket.on(
       "taskUpdated",
-      ({ id, status }: { id: string; status: string }) => {
+      ({
+        id,
+        status,
+      }: {
+        id: string;
+        status: "pending" | "in-progress" | "completed";
+      }) => {
         updateTask(id, status);
       }
     );
